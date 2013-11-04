@@ -1,8 +1,8 @@
 import os
-from test.testcase import TestCase
-from config.pyconfigini import parse_ini
+from twisted.trial import unittest
+from mamba.config.pyconfigini import parse_ini
 
-class ConfigParseIniTestCase(TestCase):
+class ConfigParseIniTestCase(unittest.TestCase):
 	def test_parse_ini(self):
 		config_file = os.path.join(os.path.dirname(__file__), 'config.ini')
 
