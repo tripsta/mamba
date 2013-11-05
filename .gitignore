@@ -63,3 +63,4 @@ nosetests.xml
 
 dump.rdb
 _trial_temp
+.idea
