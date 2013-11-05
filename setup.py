@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 	name = 'mamba',
 	packages = find_packages(),
-	version = '0.1.0',
+	version = '0.1.1',
 	description = 'Tripsta python library',
 	author = 'Tripsta SA',
 	author_email = 'developers@travelplanet24.com',
