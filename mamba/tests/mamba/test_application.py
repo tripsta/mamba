@@ -5,7 +5,15 @@ from mamba.application import BasicApplication
 this_path = path.realpath(path.dirname(__file__))
 
 
-class TestingInitializers(BasicApplication):
+class CallableInitializer(object):
+	def __init__(self, val):
+		self.val = val
+
+	def __call__(self):
+		return self.val
+
+class TestingInitializerApp(BasicApplication):
+	
 	def _initFoo(self):
 		return 'foobar'
 
@@ -14,6 +22,13 @@ class TestingInitializers(BasicApplication):
 
 	def _initFooBarBaz(self):
 		return 'foobarbazbar'
+
+
+class TestingCallableInitializerApp(BasicApplication):
+
+	_initArrays  = CallableInitializer( [1, 2, 3] )
+	_initStrings = CallableInitializer( "string" )
+	_initIntegers = CallableInitializer( 1983 )
 
 
 class BaseApplicationTest(unittest.TestCase):
@@ -63,8 +78,14 @@ class BaseApplicationTest(unittest.TestCase):
 			self.fail("unexpected key should raise AttributeError")
 
 	def test_subclass_load_initializers(self):
-		app = TestingInitializers(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+		app = TestingInitializerApp(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
 		for attr, expected in {'foo': 'foobar', 'foobar': 'foobarbaz', 'foobarbaz': 'foobarbazbar'}.iteritems():
+			self.assertTrue(attr in app._init_lazily)
+			self.assertEquals(expected, getattr(app, attr))
+
+	def test__initializer_can_ba_any_callable(self):
+		app = TestingCallableInitializerApp(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+		for attr, expected in {'arrays': [1, 2, 3], 'strings': 'string', 'integers': 1983}.iteritems():
 			self.assertTrue(attr in app._init_lazily)
 			self.assertEquals(expected, getattr(app, attr))
 
