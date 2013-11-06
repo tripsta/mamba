@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 from os.path import realpath, dirname, join
 
 from mamba.config.pyconfigini import parse_ini
+import inspect
 
 class BasicApplication(object):
 
@@ -51,16 +52,16 @@ class BasicApplication(object):
 		else:
 			raise AttributeError("{} object has no attribute {}".format(self.__class__, attr))
 
-	def _initConfig(self):
+	def init__Config(self):
 		config_file = join(self.doc_root, self.ini_path)
 		config = parse_ini(config_file, self.application_env)
 		return config
 
 
 	def _populate_lazy_initializers(self, lazily=True):
-		for attrname, method in self.__class__.__dict__.iteritems():
-			if callable(method) and attrname.startswith("_init"):
-				key = attrname.split("_init").pop(-1).lower()
+		for attrname, method in inspect.getmembers(self):
+			if callable(method) and attrname.startswith("init__"):
+				key = attrname.split("init__").pop(-1).lower()
 				self._init_lazily[key] = attrname
 
 	def path(self, partial_path=''):

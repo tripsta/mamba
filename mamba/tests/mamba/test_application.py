@@ -14,21 +14,21 @@ class CallableInitializer(object):
 
 class TestingInitializerApp(BasicApplication):
 	
-	def _initFoo(self):
+	def init__Foo(self):
 		return 'foobar'
 
-	def _initFooBar(self):
+	def init__FooBar(self):
 		return 'foobarbaz'
 
-	def _initFooBarBaz(self):
+	def init__FooBarBaz(self):
 		return 'foobarbazbar'
 
 
 class TestingCallableInitializerApp(BasicApplication):
 
-	_initArrays  = CallableInitializer( [1, 2, 3] )
-	_initStrings = CallableInitializer( "string" )
-	_initIntegers = CallableInitializer( 1983 )
+	init__Arrays  = CallableInitializer( [1, 2, 3] )
+	init__Strings = CallableInitializer( "string" )
+	init__Integers = CallableInitializer( 1983 )
 
 
 class BaseApplicationTest(unittest.TestCase):
@@ -83,7 +83,7 @@ class BaseApplicationTest(unittest.TestCase):
 			self.assertTrue(attr in app._init_lazily)
 			self.assertEquals(expected, getattr(app, attr))
 
-	def test__initializer_can_ba_any_callable(self):
+	def test__initializer_can_be_any_callable(self):
 		app = TestingCallableInitializerApp(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
 		for attr, expected in {'arrays': [1, 2, 3], 'strings': 'string', 'integers': 1983}.iteritems():
 			self.assertTrue(attr in app._init_lazily)

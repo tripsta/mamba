@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 	name = 'mamba',
 	packages = find_packages(),
-	version = '0.1.2',
+	version = '0.1.4',
 	description = 'Tripsta python library',
 	author = 'Tripsta SA',
 	author_email = 'developers@travelplanet24.com',
@@ -12,7 +12,7 @@ setup(
 Tripsta python library
 
 - Zend-like configuration with .ini files
-- bootstrapping according to environmant
+- bootstrapping according to environment supporting lazy initializers
 - Testing classes and Decorators
 - Soap Client
 - Twisted helper classes

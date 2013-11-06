@@ -60,6 +60,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.idea
 
 dump.rdb
 _trial_temp
