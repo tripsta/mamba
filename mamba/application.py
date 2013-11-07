@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import glob
-from os import path
+from os import path, environ
 from os.path import realpath, join
 import inspect
 from mamba.config.pyconfigini import parse_ini, _Obj
@@ -27,10 +27,14 @@ class BasicApplication(object):
 		self.doc_root = realpath(doc_root)
 
 		if not application_env:
-			environment_file_path = realpath(join(self.doc_root, self.DEFAULT_ENV_ID_PATH))
-			with open(environment_file_path) as env_file:
-				environment = env_file.read()
-				application_env = environment
+			environment_variable = environ.get("APP_ENV")
+			if environment_variable:
+				application_env = environment_variable
+			else:
+				environment_file_path = realpath(join(self.doc_root, self.DEFAULT_ENV_ID_PATH))
+				with open(environment_file_path) as env_file:
+					environment = env_file.read()
+					application_env = environment
 
 		self.application_env = application_env
 

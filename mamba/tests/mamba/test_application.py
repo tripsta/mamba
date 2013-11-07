@@ -1,5 +1,5 @@
 
-from os import path
+from os import path, environ
 from mamba.application import BasicApplication, NoConfigurationError
 from mamba.test import unittest
 from twisted.internet import reactor, defer, task
@@ -48,6 +48,10 @@ class BaseApplicationTestCase(unittest.TestCase):
         self.doc_root = path.realpath(this_path)
         self.ini_folder_path = path.realpath(this_path + '/data')
         self.application = self._make_basic_app('test', self.ini_path, self.doc_root)
+
+    def tearDown(self):
+        if environ.get("APP_ENV"):
+            del environ['APP_ENV']
 
     def test_init_assign_docroot_if_given(self):
         self.assertEquals(self.doc_root, self.application.doc_root)
@@ -119,6 +123,11 @@ class BaseApplicationTestCase(unittest.TestCase):
         app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
         value = yield app.my_deferred
         self.assertEquals(value, "hello")
+
+    def test_get_application_env_from_environ(self):
+        environ["APP_ENV"] = 'test'
+        app = self._make_basic_app(None, self.ini_folder_path, self.doc_root)
+        self.assertEquals(app.application_env, 'test')
 
     def _make_basic_app(self, application_env=None, ini_path=None, doc_root=None):
         return BasicApplication(
