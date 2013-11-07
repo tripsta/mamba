@@ -36,3 +36,8 @@ class TestCase(unittest.TestCase):
 		obj, attr = object_and_attr
 		_partial = functools.partial(getattr, obj, attr)
 		self.assertRaisesException(exception, _partial)
+
+	def assertAttributeNotRaises(self, object_and_attr, exception):
+		obj, attr = object_and_attr
+		_partial = functools.partial(getattr, obj, attr)
+		self.assertNotRaiseException(exception, _partial)
