@@ -1,8 +1,15 @@
 from __future__ import absolute_import, division, print_function
-from os.path import realpath, dirname, join
 
-from mamba.config.pyconfigini import parse_ini
+import glob
+from os import path
+from os.path import realpath, join
 import inspect
+from mamba.config.pyconfigini import parse_ini, _Obj
+
+
+class NoConfigurationError(Exception):
+	pass
+
 
 class BasicApplication(object):
 
@@ -15,7 +22,7 @@ class BasicApplication(object):
 		self._loaded_initializers = {}
 
 		if not doc_root:
-			doc_root = realpath(dirname('.'))
+			doc_root = realpath(path.dirname('.'))
 
 		self.doc_root = realpath(doc_root)
 
@@ -54,7 +61,20 @@ class BasicApplication(object):
 
 	def init__Config(self):
 		config_file = join(self.doc_root, self.ini_path)
-		config = parse_ini(config_file, self.application_env)
+
+		if path.isdir(config_file):
+			config = _Obj({'__default__': _Obj()})
+			ini_files_in_path = glob.glob("{}/*.ini".format(config_file))
+			if len(ini_files_in_path) == 0:
+				raise NoConfigurationError("No configuration (.ini) files in {}".format(config_file))
+
+			for ini_file_path in ini_files_in_path:
+				head, section_name = path.split(path.splitext(ini_file_path)[0])
+				section_config = parse_ini(ini_file_path, self.application_env)
+				config[section_name] = section_config
+		else:
+			config = parse_ini(config_file, self.application_env)
+
 		return config
 
 
