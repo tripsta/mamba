@@ -2,6 +2,7 @@
 from os import path
 from mamba.application import BasicApplication, NoConfigurationError
 from mamba.test import unittest
+from twisted.internet import reactor, defer, task
 
 this_path = path.realpath(path.dirname(__file__))
 
@@ -30,6 +31,14 @@ class TestingCallableInitializerApp(BasicApplication):
     init__Arrays  = CallableInitializer( [1, 2, 3] )
     init__Strings = CallableInitializer( "string" )
     init__Integers = CallableInitializer( 1983 )
+
+
+class ApplicationWithLazyDeferreds(BasicApplication):
+
+    def init__my_deferred(self):
+        def _call_fn():
+            return "hello"
+        return task.deferLater(reactor, 0, _call_fn)
 
 
 class BaseApplicationTestCase(unittest.TestCase):
@@ -104,6 +113,12 @@ class BaseApplicationTestCase(unittest.TestCase):
         self.ini_folder_path = path.realpath(this_path + '/data/dummy')
         app = self._make_basic_app('test', self.ini_folder_path, self.doc_root)
         self.assertAttributeRaises((app, 'config'), NoConfigurationError)
+
+    @defer.inlineCallbacks
+    def test_can_handle_deferreds(self):
+        app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+        value = yield app.my_deferred
+        self.assertEquals(value, "hello")
 
     def _make_basic_app(self, application_env=None, ini_path=None, doc_root=None):
         return BasicApplication(
