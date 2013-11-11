@@ -1,7 +1,9 @@
 
 from os import path, environ
+import os
 from mamba.application import BasicApplication, NoConfigurationError
 from mamba.test import unittest
+from mamba.soap.suds_client import SudsClient
 from twisted.internet import reactor, defer, task
 from time import time
 
@@ -50,6 +52,18 @@ class ApplicationWithLazyDeferreds(BasicApplication):
         def _create_object():
             return TestDeferredModel()
         return task.deferLater(reactor, 0, _create_object)
+
+    def init__a_third_deferred(self):
+        d = defer.Deferred()
+        task.deferLater(reactor, 1, d.callback, 4)
+        return d
+
+    @defer.inlineCallbacks
+    def init__soap_client(self):
+        self.wsdl = 'file://' + os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/data/dummy.wsdl')
+        d = yield SudsClient(self.wsdl)
+        e = yield SudsClient(self.wsdl)
+        defer.returnValue([d,e])
 
 class BaseApplicationTestCase(unittest.TestCase):
 
@@ -149,6 +163,16 @@ class BaseApplicationTestCase(unittest.TestCase):
         value3 = yield app.a_deferred_model
         self.assertEquals(value.time, value2.time)
         self.assertEquals(value2.time, value3.time)
+
+    @defer.inlineCallbacks
+    def test_deferred_initializers(self):
+        app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+        value = yield app.a_third_deferred
+        yield app.soap_client
+        yield app.soap_client
+        soap = yield app.soap_client
+        self.assertEquals(value, 4)
+        self.assertIsInstance(soap[0], SudsClient)
 
     def test_get_application_env_from_environ(self):
         environ["APP_ENV"] = 'test'

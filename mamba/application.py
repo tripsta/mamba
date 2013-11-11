@@ -63,11 +63,11 @@ class BasicApplication(object):
 
 				if isinstance(result, defer.Deferred):
 					result.addCallback(self._handle_deferred, attr=attr)
-				self._loaded_initializers[attr] = result
+					return result
+				else:
+					self._loaded_initializers[attr] = result
 
 			if attr in self._loaded_deferred_initializers:
-				def call_deferred():
-					return self._loaded_initializers[attr]
 				value = defer.maybeDeferred(self._loaded_initializers[attr])
 			else:
 				value = self._loaded_initializers[attr]
