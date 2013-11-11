@@ -3,6 +3,7 @@ from os import path, environ
 from mamba.application import BasicApplication, NoConfigurationError
 from mamba.test import unittest
 from twisted.internet import reactor, defer, task
+from time import time
 
 this_path = path.realpath(path.dirname(__file__))
 
@@ -33,6 +34,11 @@ class TestingCallableInitializerApp(BasicApplication):
     init__Integers = CallableInitializer( 1983 )
 
 
+class TestDeferredModel(object):
+    def __init__(self):
+        self.time = time()
+
+
 class ApplicationWithLazyDeferreds(BasicApplication):
 
     def init__my_deferred(self):
@@ -40,6 +46,10 @@ class ApplicationWithLazyDeferreds(BasicApplication):
             return "hello"
         return task.deferLater(reactor, 0, _call_fn)
 
+    def init__a_deferred_model(self):
+        def _create_object():
+            return TestDeferredModel()
+        return task.deferLater(reactor, 0, _create_object)
 
 class BaseApplicationTestCase(unittest.TestCase):
 
@@ -123,6 +133,22 @@ class BaseApplicationTestCase(unittest.TestCase):
         app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
         value = yield app.my_deferred
         self.assertEquals(value, "hello")
+
+    @defer.inlineCallbacks
+    def test_getters_that_return_deferreds_always_return_deferreds(self):
+        app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+        value  = yield app.my_deferred
+        value2 = yield app.my_deferred
+        self.assertEquals(value, value2)
+
+    @defer.inlineCallbacks
+    def test_initializers_returning_deferreds_fire_once(self):
+        app = ApplicationWithLazyDeferreds(application_env='test', ini_path=self.ini_path, doc_root=self.doc_root)
+        value  = yield app.a_deferred_model
+        value2 = yield app.a_deferred_model
+        value3 = yield app.a_deferred_model
+        self.assertEquals(value.time, value2.time)
+        self.assertEquals(value2.time, value3.time)
 
     def test_get_application_env_from_environ(self):
         environ["APP_ENV"] = 'test'

@@ -5,6 +5,9 @@
 * Application Configuration
 * SoapClient for twisted
 
+## Local development
+
+	pip install -e <path-to-mamba-root>
 
 ## Provided classes
 
@@ -29,3 +32,32 @@ example
 
         init__mycallable = MyCallable()
 
+methods that return deferreds always return deferreds
+
+    from twisted.internet import defer, reactor, task
+    from mamba.application import BasicApplication
+
+    class TestDeferredModel(object):
+        def __init__(self):
+            self.time = time()
+
+
+    class ApplicationWithLazyDeferreds(BasicApplication):
+
+        def init__my_deferred(self):
+            def _call_fn():
+                return "hello"
+            return task.deferLater(reactor, 0, _call_fn)
+
+        def init__a_deferred_model(self):
+            def _create_object():
+                return TestDeferredModel()
+            return task.deferLater(reactor, 0, _create_object)
+
+
+    # using with twisted.internet.defer.inlineCallbacks:
+    @defer.inlineCallbacks
+    def app_with_deferreds():
+        app = ApplicationWithLazyDeferreds()
+        v = yield app.my_deferred
+        v2 = yield app.a_deferred_model

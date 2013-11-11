@@ -4,12 +4,17 @@ import glob
 from os import path, environ
 from os.path import realpath, join
 import inspect
+from twisted.internet import defer
 from mamba.config.pyconfigini import parse_ini, _Obj
+import functools
 
 
 class NoConfigurationError(Exception):
 	pass
 
+def returns_deferred(fn):
+	fn.returns_deferred = True
+	return fn
 
 class BasicApplication(object):
 
@@ -18,8 +23,9 @@ class BasicApplication(object):
 
 	def __init__(self, application_env=None, ini_path=None, doc_root=None):
 
-		self._init_lazily         = {}
-		self._loaded_initializers = {}
+		self._init_lazily                  = {}
+		self._loaded_initializers          = {}
+		self._loaded_deferred_initializers = set()
 
 		if not doc_root:
 			doc_root = realpath(path.dirname('.'))
@@ -40,7 +46,7 @@ class BasicApplication(object):
 
 		if not ini_path:
 			ini_path = realpath(join(self.doc_root, self.DEFAULT_INI_PATH))
-		self.ini_path =ini_path
+		self.ini_path = ini_path
 		self._populate_lazy_initializers()
 
 	def __setattr__(self, attr, value):
@@ -53,15 +59,32 @@ class BasicApplication(object):
 		if attr in self._init_lazily:
 			if attr not in self._loaded_initializers:
 				method = getattr(self, self._init_lazily[attr])
-				self._loaded_initializers[attr] = method()
+				result = method()
 
-			return self._loaded_initializers[attr]
+				if isinstance(result, defer.Deferred):
+					result.addCallback(self._handle_deferred, attr=attr)
+				self._loaded_initializers[attr] = result
+
+			if attr in self._loaded_deferred_initializers:
+				def call_deferred():
+					return self._loaded_initializers[attr]
+				value = defer.maybeDeferred(self._loaded_initializers[attr])
+			else:
+				value = self._loaded_initializers[attr]
+			return value
 
 		elif attr in self.__dict__:
 			return self.__dict__[attr]
 
 		else:
 			raise AttributeError("{} object has no attribute {}".format(self.__class__, attr))
+
+	def _handle_deferred(self, value, attr):
+		self._loaded_deferred_initializers.add(attr)
+		def wrapping_deferred_value():
+			return defer.succeed(value)
+		self._loaded_initializers[attr] = wrapping_deferred_value
+		return value
 
 	def init__Config(self):
 		config_file = join(self.doc_root, self.ini_path)
