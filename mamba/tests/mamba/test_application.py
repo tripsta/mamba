@@ -40,7 +40,6 @@ class TestDeferredModel(object):
     def __init__(self):
         self.time = time()
 
-
 class ApplicationWithLazyDeferreds(BasicApplication):
 
     def init__my_deferred(self):
@@ -57,6 +56,10 @@ class ApplicationWithLazyDeferreds(BasicApplication):
         d = defer.Deferred()
         task.deferLater(reactor, 1, d.callback, 4)
         return d
+
+    def init__my_product_key(self):
+        key = self.config.product.item.key
+        return key + key
 
     @defer.inlineCallbacks
     def init__soap_client(self):
@@ -107,6 +110,30 @@ class BaseApplicationTestCase(unittest.TestCase):
         test_config = self.application.config
         self.application.application_env = 'common'
         self.assertEquals('abc1234', self.application.config.product.item.key)
+
+    def test___setattr___application_env_invalidate_all_loaded_initializers(self):
+        ini_path = path.realpath(this_path + '/data/application.ini')
+        doc_root = path.realpath(this_path)
+        app = ApplicationWithLazyDeferreds(ini_path=ini_path, doc_root=doc_root)
+        self.assertEquals(app.my_product_key, "abc1234abc1234")
+        app.application_env = 'test'
+        self.assertEqual(len(app._loaded_initializers), 0)
+
+    def test___setattr___application_env_invalidate_all_loaded_deferred_initializers(self):
+        ini_path = path.realpath(this_path + '/data/application.ini')
+        doc_root = path.realpath(this_path)
+        app = ApplicationWithLazyDeferreds(ini_path=ini_path, doc_root=doc_root)
+        self.assertEquals(app.my_product_key, "abc1234abc1234")
+        app.application_env = 'test'
+        self.assertEqual(len(app._loaded_deferred_initializers), 0)
+
+    def test___setattr___application_env_use_new_env_on_next_getattr(self):
+        ini_path = path.realpath(this_path + '/data/application.ini')
+        doc_root = path.realpath(this_path)
+        app = ApplicationWithLazyDeferreds(ini_path=ini_path, doc_root=doc_root)
+        self.assertEquals(app.my_product_key, "abc1234abc1234")
+        app.application_env = 'test'
+        self.assertEquals(app.my_product_key, "abc6789abc6789")
 
     def test___getattr___raise_AttributeError_on_unexpected_property_access(self):
         try:

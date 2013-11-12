@@ -51,8 +51,9 @@ class BasicApplication(object):
 
 	def __setattr__(self, attr, value):
 		if attr == 'application_env':
-			if 'config' in self._loaded_initializers:
-				del self._loaded_initializers['config']
+			self._loaded_deferred_initializers = set()
+			for key in self._loaded_initializers.keys():
+				del self._loaded_initializers[key]
 		self.__dict__[attr] = value
 
 	def __getattr__(self, attr):
