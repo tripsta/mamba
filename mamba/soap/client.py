@@ -13,10 +13,10 @@ import re
 
 class SoapEnvelopeNamespaceFix(MessagePlugin):
     def sending(self, context):
-		if ('xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"' in context.envelope):
-			context.envelope = re.sub('xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"', '', context.envelope)
-			context.envelope = re.sub('<ns0:', '<SOAP-ENV:', context.envelope)
-			context.envelope = re.sub('</ns0:', '</SOAP-ENV:', context.envelope)
+		if re.search('(xmlns:ns)+([0-9])+(="http://schemas.xmlsoap.org/soap/envelope/")', context.envelope):
+			context.envelope = re.sub('(xmlns:ns)+[0-9]+(="http://schemas.xmlsoap.org/soap/envelope/")', '', context.envelope)
+			context.envelope = re.sub('(<ns)+([0-9])+(:)', '<SOAP-ENV:', context.envelope)
+			context.envelope = re.sub('(</ns)+([0-9])+(:)', '</SOAP-ENV:', context.envelope)
 
 """
 SoapClient just for building requests
