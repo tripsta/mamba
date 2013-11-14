@@ -11,13 +11,9 @@ class SudsClient(object):
 
 	zope.interface.implements(ClientAdapter)
 
-	def __init__(self, wsdl, options={"retXml" : True}, headers=None):
-		self.client = Client(wsdl, plugins=[SoapEnvelopeNamespaceFix()], cachingpolicy=1)
+	def __init__(self, wsdl, options={}):
+		self.client = Client(wsdl, plugins=[SoapEnvelopeNamespaceFix()], **options)
 		self.client.connect()
-		if options:
-			self.client.set_options(retxml=True)
-		if headers:
-			self.set_headers(headers)
 
 	def set_headers(self, headers):
 		self.client.set_options(soapheaders=headers)
