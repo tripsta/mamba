@@ -1,5 +1,9 @@
 from twisted.spread import pb
 from twisted.internet import task
+import random
+
+def random_range(i, j):
+    return random.random() * (j - i) + i
 
 class PBReConnectingClientFactory(pb.PBClientFactory):
 
