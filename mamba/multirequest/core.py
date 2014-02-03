@@ -44,7 +44,10 @@ class WebserviceRequestCallableMixin(object):
     @defer.inlineCallbacks
     def send(self):
         yield defer.maybeDeferred(self.set_soap_headers)
-        defer.returnValue(self.client.send_request(self.method_name, self.params))
+        val = yield defer.maybeDeferred(self.client.send_request,
+                                        self.method_name,
+                                        self.params)
+        defer.returnValue(val)
 
     @defer.inlineCallbacks
     def perform(self):
@@ -56,7 +59,7 @@ class WebserviceRequestCallableMixin(object):
             yield defer.maybeDeferred(self.handle_send_error, e)
             defer.returnValue(None)
 
-        yield defer.maybeDeferred(self._log_conversation)
+        self.log_conversation()
         resp = yield defer.maybeDeferred(self.parse_response)
         defer.returnValue(resp)
 
@@ -65,9 +68,6 @@ class WebserviceRequestCallableMixin(object):
         resp = yield self.perform()
         defer.returnValue(resp)
 
-
-class AmadeusRequest(WebserviceRequestCallableMixin):
-    implements(IWebserviceLoggable, IWebserviceRequestDelegate)
 
 class IRequestRunner(Interface):
     def run_requests(request_collection):
