@@ -17,7 +17,7 @@ class SudsClientTestCase(TestCase):
 
 	@defer.inlineCallbacks
 	def setUp(self):
-		self.wsdl = 'file://' + os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../../../tests/mamba/data/dummy.wsdl')
+		self.wsdl = 'file://' + os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../../../mamba/tests/mamba/data/dummy.wsdl')
 		if not SudsClientTestCase.client:
 			SudsClientTestCase.client = yield SudsClient(self.wsdl)
 		self.client = SudsClientTestCase.client
