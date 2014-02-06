@@ -50,11 +50,12 @@ class BasicRequestFullfiler(object):
     def __call__(self, request):
         """Fullfill a BasicRequest or a BasicMultiRequest,
         returns a DeferredList"""
+        try:
+            it = iter(request)
+        except TypeError:
+            it = iter([request])
 
-        if isinstance(request, (BasicRequest, RemoteBasicRequest)):
-            requests = self._get_callable(request)
-        else:
-            requests = (self._get_callable(r) for r in iter(request))
+        requests = (self._get_callable(r) for r in it)
 
         return self.request_runner.run_requests(requests)
 
