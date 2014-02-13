@@ -15,6 +15,27 @@ class RemoteBasicRequest(flavors.RemoteCopy):
     pass
 
 
+class obj(object):
+    def __init__(self, d):
+        assert isinstance(d, dict)
+        for a, b in d.iteritems():
+            if self._is_iterable(b):
+                what = [self._make_obj(x) for x in b]
+            else:
+                what = self._make_obj(b)
+            setattr(self, a, b)
+
+    def _make_obj(self, sth):
+        return obj(sth) if isinstance(sth, dict) else sth
+
+    def _is_iterable(self, thing):
+        try:
+            _ = iter(thing)
+            return False if isinstance(thing, dict) else True
+        except TypeError, te:
+            return False
+
+
 flavors.setUnjellyableForClass(BasicRequest, RemoteBasicRequest)
 
 
@@ -61,8 +82,10 @@ class BasicRequestFullfiler(object):
 
     def _get_callable(self, request):
         """Called with a BasicRequest object returns a callable"""
-        
-        parts = request.method.split(".")
+        if isinstance(request, dict):
+            parts = request['method'].split(".")
+        else:
+            parts = request.method.split(".")
         function_to_call = getattr(self.webservice_module, parts.pop(0))
 
         for name in parts:
