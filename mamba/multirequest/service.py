@@ -17,23 +17,11 @@ class RemoteBasicRequest(flavors.RemoteCopy):
 
 class obj(object):
     def __init__(self, d):
-        assert isinstance(d, dict)
-        for a, b in d.iteritems():
-            if self._is_iterable(b):
-                what = [self._make_obj(x) for x in b]
+        for a, b in d.items():
+            if isinstance(b, (list, tuple)):
+               setattr(self, a, [obj(x) if isinstance(x, dict) else x for x in b])
             else:
-                what = self._make_obj(b)
-            setattr(self, a, b)
-
-    def _make_obj(self, sth):
-        return obj(sth) if isinstance(sth, dict) else sth
-
-    def _is_iterable(self, thing):
-        try:
-            _ = iter(thing)
-            return False if isinstance(thing, dict) else True
-        except TypeError, te:
-            return False
+               setattr(self, a, obj(b) if isinstance(b, dict) else b)
 
 
 flavors.setUnjellyableForClass(BasicRequest, RemoteBasicRequest)
