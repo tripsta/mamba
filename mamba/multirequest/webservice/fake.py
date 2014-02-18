@@ -4,4 +4,8 @@ from mamba.multirequest.core import FakeRequestCallable
 def ping(request):
 	return FakeRequestCallable(reactor)
 
-__all__ = ["ping"]
+def fail(request):
+	f = FakeRequestCallable(reactor, shouldfail=True)
+	return f
+
+__all__ = ["ping", "fail"]
