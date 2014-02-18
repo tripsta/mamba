@@ -14,6 +14,12 @@ class FullfillRequestTestCase(unittest.TestCase):
         d.addCallback(self.assertTrue)
         return d
 
+    def test_accept_dict_as_request(self):
+        request = {"method": "fake.ping"}
+        d = service.fullfill_request(request)
+        d.addCallback(self.assertSuccessesAndFailures, successes=1, failures=0)
+        return d
+
     def test_raises_AttributeError_if_function_not_in_module(self):
         request = service.BasicRequest(method='fake.pong')
         self.assertRaises(AttributeError, service.fullfill_request, request)

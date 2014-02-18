@@ -57,8 +57,11 @@ class BasicRequestFullfiler(object):
         self.request_runner = request_runner
 
     def __call__(self, request):
-        """Fullfill a BasicRequest or a BasicMultiRequest,
+        """Fullfill a BasicRequest or a BasicMultiRequest, or a dict, or a list of dicts
         returns a DeferredList"""
+        if isinstance(request, dict):
+            request = [request]
+
         try:
             it = iter(request)
         except TypeError:
