@@ -121,7 +121,7 @@ class BasicRequestRunner(object):
                 raise TypeError("Callable should return twisted.internet.defer.Deferred")
             deferreds.append(d)
 
-        return defer.DeferredList(deferreds)
+        return defer.DeferredList(deferreds, consumeErrors=True)
 
     def _cancel_deferreds(self, deferreds):
         return [d.cancel() for d in deferreds]
