@@ -5,6 +5,7 @@ from datetime import datetime
 
 
 import suds
+from suds.client import RequestContext
 from mamba.soap.suds_client import SudsClient
 from mamba.test.unittest import TestCase
 from mamba.soap.client_adapter import ClientAdapter
@@ -42,6 +43,7 @@ class SudsClientInitTest(SudsClientTestCase):
 		self.assertEqual(0, self.client.client.options.cachingpolicy)
 		self.assertEqual("foobar", self.client.client.options.soapheaders)
 		self.assertEqual(suds.client.Client, suds_client.__class__)
+		self.assertEqual({"Accept-Encoding": "gzip"}, suds_client.options.transport.options.headers)
 
 	@defer.inlineCallbacks
 	def test_options_default_if_no_options_given(self):
