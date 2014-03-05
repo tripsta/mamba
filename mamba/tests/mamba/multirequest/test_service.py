@@ -2,6 +2,34 @@ from mamba.test import unittest
 from twisted.internet import task, defer
 from mamba.multirequest import service, webservice
 
+class ObjTestCase(unittest.TestCase):
+    def test_unobjectify_return_original_dict(self):
+        d = {
+            "one": 1,
+            "two": {
+                "three": 2
+            }
+        }
+        o = service.obj(d)
+        d2 = o.unobjectify()
+        self.assertIsInstance(d2, dict)
+        self.assertEqual(d2, d)
+
+    def test_raise_unless_root(self):
+        d = {
+            "one": 1,
+            "two": {
+                "three": 2
+            }
+        }
+        o = service.obj(d)
+        try:
+            two = o.two.unobjectify()
+        except TypeError:
+            pass
+        else:
+            self.fail("objs can be unobjectified only on the root node")
+
 
 class FullfillRequestTestCase(unittest.TestCase):
 

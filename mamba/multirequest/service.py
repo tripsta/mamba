@@ -16,12 +16,23 @@ class RemoteBasicRequest(flavors.RemoteCopy):
 
 
 class obj(object):
-    def __init__(self, d):
+    def __init__(self, d, isorigin=True):
+        if isorigin:
+            self.__original__ = d
+        else:
+            self.__original__ = None
         for a, b in d.items():
             if isinstance(b, (list, tuple)):
-               setattr(self, a, [obj(x) if isinstance(x, dict) else x for x in b])
+               setattr(self, a, [obj(x, False) if isinstance(x, dict) else x for x in b])
             else:
-               setattr(self, a, obj(b) if isinstance(b, dict) else b)
+               setattr(self, a, obj(b, False) if isinstance(b, dict) else b)
+
+    def unobjectify(self):
+        if not self.__original__:
+            raise TypeError("not root obj node")
+
+        return self.__original__
+
 
 
 flavors.setUnjellyableForClass(BasicRequest, RemoteBasicRequest)
