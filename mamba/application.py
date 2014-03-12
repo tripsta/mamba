@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 import glob
+import traceback
+import socket
+import sys
 from os import path, environ
 from os.path import realpath, join
 import inspect
 from twisted.internet import defer
 from mamba.config.pyconfigini import parse_ini, _Obj
-import functools
 
 
 class NoConfigurationError(Exception):
@@ -48,6 +50,7 @@ class BasicApplication(object):
 			ini_path = realpath(join(self.doc_root, self.DEFAULT_INI_PATH))
 		self.ini_path = ini_path
 		self._populate_lazy_initializers()
+		self.register_custom_error_handler()
 
 	def __setattr__(self, attr, value):
 		if attr == 'application_env':
@@ -115,3 +118,45 @@ class BasicApplication(object):
 	def path(self, partial_path=''):
 		return realpath(self.doc_root + partial_path)
 
+	def _check_fluentd_availability(self):
+		try:
+			if self.config.application.fluentd_logging_enabled:
+				try:
+					from fluent import sender
+					from fluent import event
+					self.sender = sender
+					self.event = event
+					return True
+				except ImportError:
+					pass
+		except:
+			pass
+		return False
+
+
+	def custom_error_handler(self, ex_cls, ex, tb):
+		try:
+			app_name = self.config.application.app_name
+		except:
+			app_name = 'unknown'
+
+		self.sender.setup('fluentd.' + self.application_env)
+		error_file = path.split(tb.tb_frame.f_code.co_filename)[1]
+		error_line = tb.tb_lineno
+		error_str = str(ex)
+		message = error_str + " in " + error_file + " on line " + str(error_line)
+		a = {
+			'host': socket.gethostname(),
+			'error_line': error_line,
+			'error_file': error_file,
+			'error_str': error_str,
+			'message': message,
+			'stackTrace': ''.join(traceback.format_tb(tb)),
+			'type': str(ex_cls),
+			'app' : app_name
+		}
+		self.event.Event(app_name, a)
+
+	def register_custom_error_handler(self):
+		if self._check_fluentd_availability():
+			sys.excepthook = self.custom_error_handler
