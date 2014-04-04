@@ -106,7 +106,6 @@ class SudsClientProxy(object):
         self.invoker = None
 
     def __getattr__(self, attr):
-        print(attr)
         return getattr(self.sudsclient, attr)
 
     def send_request(self, method_name, params, args=[]):
