@@ -1,9 +1,10 @@
 from __future__ import print_function, division
 from twisted.internet import defer
-import cyclone.web
 import txmongo
 import datetime
 from bson.son import SON
+from bson import ObjectId
+
 
 class AsyncDocument(object):
     __collection__ = {}
@@ -42,6 +43,7 @@ class AsyncDocument(object):
         cls.__mongo__ = {}
         defer.returnValue(cls)
 
+
     @classmethod
     @defer.inlineCallbacks
     def get_mongo(cls):
@@ -54,6 +56,7 @@ class AsyncDocument(object):
 
         defer.returnValue(cls.__mongo__[sectionkey])
 
+
     @classmethod
     def get_collection_name(cls):
         coll_name = cls.__collection_name__
@@ -61,6 +64,7 @@ class AsyncDocument(object):
             cfg = cls._get_config()
             coll_name = cfg.collection
         return coll_name
+
 
     @classmethod
     @defer.inlineCallbacks
@@ -73,12 +77,22 @@ class AsyncDocument(object):
             cls.__collection__[cls.__configsection__] = mongo_collection
         defer.returnValue(cls.__collection__[cls.__configsection__])
 
+
     @classmethod
     @defer.inlineCallbacks
     def find_one(cls, mongo_id):
         coll = yield cls.get_collection()
         docs = yield coll.find_one(ObjectId(mongo_id))
         defer.returnValue(docs if len(docs) else None)
+
+
+    @classmethod
+    @defer.inlineCallbacks
+    def find(cls, args):
+        coll = yield cls.get_collection()
+        docs = yield coll.find(args)
+        defer.returnValue(docs if len(docs) else None)
+
 
     @classmethod
     @defer.inlineCallbacks
@@ -88,15 +102,16 @@ class AsyncDocument(object):
         docs = yield coll.find(limit=how_many, filter=f)
         defer.returnValue(docs)
 
+
     @classmethod
     @defer.inlineCallbacks
     def drop_database(cls):
         cmd = SON({"dropDatabase": 1})
         mongo = yield cls.get_mongo()
         cfg = cls._get_config()
-        coll_name = cls.get_collection_name()
         db = mongo[cfg.database]
         yield db["$cmd"].find_one(cmd)
+
 
     @classmethod
     def _get_config(cls):

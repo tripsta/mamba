@@ -1,17 +1,8 @@
 from __future__ import absolute_import
-import socket
-import time
-import os
-import codecs
-
 from twisted.internet import reactor, defer
-from twisted.python import log
 
-from seeya.conversation_log.models import SearchConversationLog, ConversationLog
 from mamba.helpers import log_with_traceback
 from mamba.workers.gearmanized import Gearmanized
-
-HOST_NAME = socket.gethostname()
 
 
 class GearmanLogConversationService(Gearmanized):
@@ -23,7 +14,7 @@ class GearmanLogConversationService(Gearmanized):
                 reactor.callInThread(self._log_to_file, **conversation)
             reactor.callLater(0, self._log_to_mongo, **conversation)
         except Exception, e:
-            log.err(e)
+            log_with_traceback(e)
         return True
 
     @defer.inlineCallbacks
@@ -35,5 +26,3 @@ class GearmanLogConversationService(Gearmanized):
 
     def _is_development(self):
         raise NotImplementedError("Subclasses should implement this!")
-
-log_conversation = GearmanLogConversationService

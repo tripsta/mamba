@@ -2,6 +2,7 @@ import traceback
 from twisted.python import log
 from twisted.python.failure import Failure
 
+
 def log_with_traceback(exc, reraise=False, extras={}):
     if isinstance(exc, (Failure,)):
         log.err(exc)
@@ -17,6 +18,7 @@ def log_with_traceback(exc, reraise=False, extras={}):
         log.err("\n".join(messages))
         if reraise:
             raise exc
+
 
 def decode_unless_unicode(some_string, encoding="utf-8"):
     if isinstance(some_string, unicode):
