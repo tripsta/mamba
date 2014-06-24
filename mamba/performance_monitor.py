@@ -1,6 +1,6 @@
 import os.path
 import time
-from functools import wraps
+from functools import wraps, partial
 from newrelic import agent
 from twisted.internet import defer
 from logging import Logger
@@ -31,7 +31,7 @@ class PerformanceMonitor(object):
                             background_task_name=background_task_name,
                             background_task_group=background_task_group)
         else:
-            return ZeroClass()
+            return DoNothing() # rename to DoNothing
 
     def duration_per_arg(self, custom_metric_name=None,
                  background_task_name="testFunction",
@@ -45,7 +45,7 @@ class PerformanceMonitor(object):
                             background_task_group=background_task_group,
                             get_arg=get_arg)
         else:
-            return ZeroClass()
+            return DoNothing()
 
 
 class Duration(object):
@@ -129,15 +129,13 @@ class DurationPerArg(Duration):
             if len(_merged_custom_metric_name):
                 _custom_metric_name = ".".join(_merged_custom_metric_name)
 
-                @super.__call__(self, fn)
-                def duration_wrapper(fnn, *args, **kwargs):
-                    return fnn(*args, **kwargs)
+                partial(super.duration_wrapper, fn)
+                return duration_wrapper(*args, **kwargs)
 
-                return duration_wrapper(fn, *args, **kwargs)
         return wrapper
 
 
-class ZeroClass(object):
+class DoNothing(object):
     def __call__(self, fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
