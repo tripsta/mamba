@@ -7,7 +7,12 @@ from logging import Logger
 
 class PerformanceMonitor(object):
     def __init__(self, config=None):
+
         self.custom_logger = None
+        self.active = False
+        self.start_time = dict()
+        self.newrelic_application = None
+
         if config:
             self.config(config)
 
@@ -46,6 +51,17 @@ class PerformanceMonitor(object):
                             get_arg=get_arg)
         else:
             return DoNothing()
+
+    def start_duration_trace(self, custom_metric_name=None):
+        if self.active:
+            self.start_time[custom_metric_name] = time.time()
+
+    def end_duration_trace(self, custom_metric_name):
+        if self.active:
+            _end = time.time()
+            _total_duration = _end - self.start_time[custom_metric_name]
+            custom_metric = "Custom/{}".format(custom_metric_name)
+            self.newrelic_application.record_custom_metric(custom_metric, _total_duration)
 
 
 class Duration(object):
