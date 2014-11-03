@@ -32,12 +32,14 @@ class Gearmanized(object):
     job_name = None
     config = ("127.0.0.1", 4730)
 
-    def __init__(self, my_id=0):
+    def __init__(self, my_id=0, options=None):
         self._gearman = None
         self._sleeping = None
         self._worker = None
         self.shutdown_requested = None
         self.my_id = str(my_id)
+        if options and hasattr(options, 'host'):
+            self.config = options.host, options.port
 
     @inlineCallbacks
     def __call__(self, job):

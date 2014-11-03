@@ -22,11 +22,11 @@ def _connector(workers, max_wait=1.0):
     return DeferredList(deferred_list)
 
 
-def gearmanize(gearmanized_subclass, how_many):
+def gearmanize(gearmanized_subclass, how_many, *args, **kwargs):
     """
     Creates Geamanized instances
     Return tuple of 2 items a list of instances and a connector function
     """
-    workers = [gearmanized_subclass(i) for i in xrange(how_many)]
+    workers = [gearmanized_subclass(i, *args, **kwargs) for i in xrange(how_many)]
 
     return workers, _connector
