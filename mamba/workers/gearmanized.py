@@ -40,7 +40,7 @@ class Gearmanized(object):
         self.my_id = str(my_id)
         if options:
             self.config['host'] = options.get('host') or "127.0.0.1"
-            self.config['port'] = options.get('port') or 4730
+            self.config['port'] = int(options.get('port')) or 4730
 
     @inlineCallbacks
     def __call__(self, job):
