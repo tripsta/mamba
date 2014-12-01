@@ -30,14 +30,16 @@ class StopWorker(Exception):
 class Gearmanized(object):
 
     job_name = None
-    config = ("127.0.0.1", 4730)
+    config = {}
 
-    def __init__(self, my_id=0):
+    def __init__(self, my_id=0, options={}):
         self._gearman = None
         self._sleeping = None
         self._worker = None
         self.shutdown_requested = None
         self.my_id = str(my_id)
+        self.config['host'] = options.get('host') or "127.0.0.1"
+        self.config['port'] = int(options.get('port') or 4730)
 
     @inlineCallbacks
     def __call__(self, job):
@@ -150,8 +152,7 @@ class Gearmanized(object):
         return True
 
     def _connect_to_gearman(self):
-        host, port = self.config
-        return ClientCreator(reactor, GearmanProtocol).connectTCP(host, port)
+        return ClientCreator(reactor, GearmanProtocol).connectTCP(self.config['host'], self.config['port'])
 
     @inlineCallbacks
     def _register_worker(self):
