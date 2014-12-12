@@ -100,6 +100,7 @@ class BasicApplication(object):
 				raise NoConfigurationError("No configuration (.ini) files in {}".format(config_file))
 
 			for ini_file_path in ini_files_in_path:
+				print(ini_file_path, self.application_env)
 				head, section_name = path.split(path.splitext(ini_file_path)[0])
 				section_config = parse_ini(ini_file_path, self.application_env)
 				config[section_name] = section_config
