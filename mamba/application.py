@@ -44,7 +44,7 @@ class BasicApplication(object):
 					environment = env_file.read()
 					application_env = environment
 
-		self.application_env = application_env
+		self.application_env = application_env.strip()
 
 		if not ini_path:
 			ini_path = realpath(join(self.doc_root, self.DEFAULT_INI_PATH))
