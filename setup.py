@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 	name = 'mamba',
 	packages = find_packages(),
-	version = '0.1.15',
+	version = '0.1.16',
 	description = 'Tripsta python utility library',
 	author = 'Tripsta SA',
 	author_email = 'developers@travelplanet24.com',
@@ -17,6 +17,7 @@ Tripsta python utility library
 - Soap Client
 - Twisted helper classes
 - Multirequest utility classes
+- Utilities for running twisted gearman workers
 
 Works with python 2.7.x
 """
