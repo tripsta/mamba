@@ -1,13 +1,9 @@
 from __future__ import print_function
 import zope.interface
-from twisted.internet import defer
-from mamba.soap.client import SoapEnvelopeNamespaceFix
+
 from suds.client import Client, Method, SoapClient
 from suds.plugin import MessagePlugin
-
-
 from mamba.soap.client_adapter import ClientAdapter
-
 
 
 class SoapClientProxy(SoapClient):
@@ -49,7 +45,6 @@ class MethodProxy(Method):
         else:
             return client.invoke(args, kwargs)
 
-
     def clientclass(self, kw=None):
         return SoapClientProxy
 
@@ -59,21 +54,21 @@ class MethodProxy(Method):
             self._soapclient = clientclass(self.client, self.method)
         return self._soapclient
 
+
 class SudsClient(object):
 
     zope.interface.implements(ClientAdapter)
 
     def __init__(self, wsdl, options={}):
-        if not 'plugins' in options:
-            options['plugins'] = [SoapEnvelopeNamespaceFix()]
-        else:
-            options['plugins'].append(SoapEnvelopeNamespaceFix())
 
-        # TODO: add headers for compression per provider/request
-        if not 'headers' in options:
+        if 'headers' not in options:
             options['headers'] = {}
-        options['headers'].update({"Accept-Encoding": "gzip"})
-        options['plugins'] = [SupportGZIPPlugin()]
+
+        if 'plugins' not in options:
+            options['plugins'] = []
+
+        options['headers'].update({'Accept-Encoding': 'gzip'})
+        options['plugins'].append(SupportGZIPPlugin())
 
         self.client = Client(wsdl, **options)
         self.client.connect()
@@ -109,7 +104,8 @@ class SudsClientProxy(object):
         return getattr(self.sudsclient, attr)
 
     def send_request(self, method_name, params, args=[]):
-        self.method = MethodProxy(getattr(self.sudsclient.client.service, method_name))
+        method = getattr(self.sudsclient.client.service, method_name)
+        self.method = MethodProxy(method)
         self.invoker = self.method.invoker()
         return self.method(**params)
 
@@ -125,6 +121,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 import gzip
+
 
 class SupportGZIPPlugin(MessagePlugin):
 
