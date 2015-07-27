@@ -48,7 +48,7 @@ def parse_ini(ini_path, env=None):
                     ini[section] = deepcopy(ini[parent])
                 current_section = section
             else:
-                pieces = line.split('=')
+                pieces = line.split('=', 1)
                 vals = pieces[0].strip().split('.')
                 vals.reverse()
                 data = _cast(pieces[1].strip())
