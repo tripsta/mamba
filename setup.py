@@ -7,7 +7,7 @@ setup(
 	description = 'Tripsta python utility library',
 	author = 'Tripsta SA',
 	author_email = 'developers@travelplanet24.com',
-	url = 'https://github.com/tripsta/mamba',
+	url = 'https://github.com/ferryhunter/mamba',
 	long_description = """\
 Tripsta python utility library
 
