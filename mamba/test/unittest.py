@@ -1,8 +1,7 @@
 import sys
 from twisted.trial import unittest
-import unittest as pyunittest
 from zope.interface.exceptions import BrokenImplementation
-from zope.interface.verify     import verifyObject
+from zope.interface.verify import verifyObject
 import functools
 
 
